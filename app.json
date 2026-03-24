@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "303D-assignment4",
-    "slug": "303D-assignment4",
+    "name": "303D-assignment5",
+    "slug": "303D-assignment5",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "303dassignment4",
+    "scheme": "303dassignment5",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
