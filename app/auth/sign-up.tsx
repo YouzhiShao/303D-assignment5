@@ -1,5 +1,6 @@
-// app/auth/sign-up.tsx
+import { auth } from "@/config/firebaseConfig";
 import { Link, Stack } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { Formik } from "formik";
 import {
   Alert,
@@ -35,10 +36,24 @@ export default function SignUpScreen() {
           try {
             Keyboard.dismiss();
             setSubmitting(true);
-            // Mock API sign-up
-            await new Promise((res) => setTimeout(res, 1200));
+            await createUserWithEmailAndPassword(
+              auth,
+              values.email,
+              values.password,
+            );
             Alert.alert("Account Created", `Welcome, ${values.fullName}!`);
             resetForm();
+          } catch (error: any) {
+            let errorMessage = "Something went wrong.";
+            console.log("Firebase Error Object:", error);
+
+            if (error.code === "auth/email-already-in-use") {
+              errorMessage = "That email address is already in use!";
+            } else if (error.code === "auth/invalid-email") {
+              errorMessage = "That email address is invalid!";
+            }
+
+            Alert.alert("Registration Failed", errorMessage);
           } finally {
             setSubmitting(false);
           }

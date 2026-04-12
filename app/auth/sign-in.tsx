@@ -1,4 +1,6 @@
+import { auth } from "@/config/firebaseConfig";
 import { Link, Stack, useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { Formik } from "formik";
 import {
   Alert,
@@ -34,10 +36,25 @@ export default function SignInScreen() {
           try {
             Keyboard.dismiss();
             setSubmitting(true);
-            await new Promise((res) => setTimeout(res, 1200));
+            await signInWithEmailAndPassword(
+              auth,
+              values.email,
+              values.password,
+            );
             resetForm();
             router.navigate("/employee");
-            Alert.alert(`Welcome! Now you can fill the Employee Form`);
+            Alert.alert("Success", "You are now signed in!");
+          } catch (error: any) {
+            let errorMessage = "Login failed. Please check your credentials.";
+
+            if (error.code === "auth/invalid-credential") {
+              errorMessage = "Invalid email or password.";
+            } else if (error.code === "auth/user-not-found") {
+              errorMessage = "No account found with this email.";
+            } else if (error.code === "auth/wrong-password") {
+              errorMessage = "Incorrect password.";
+            }
+            Alert.alert("Error", errorMessage);
           } finally {
             setSubmitting(false);
           }

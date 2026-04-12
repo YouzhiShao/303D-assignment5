@@ -1,5 +1,7 @@
 // app/employee/index.tsx
-import { Stack } from "expo-router";
+import { auth, db } from "@/config/firebaseConfig";
+import { Stack, useRouter } from "expo-router";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { Formik } from "formik";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import FormTextInput from "../../components/FormTextInput";
@@ -7,6 +9,7 @@ import SubmitButton from "../../components/SubmitButton";
 import { employeeSchema } from "../../validation/employeeSchema";
 
 export default function EmployeeFormScreen() {
+  const router = useRouter();
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Configure screen title via Stack.Screen in Expo Router */}
@@ -27,10 +30,25 @@ export default function EmployeeFormScreen() {
         onSubmit={async (values, { resetForm, setSubmitting }) => {
           try {
             setSubmitting(true);
-            // Mock API call
-            await new Promise((res) => setTimeout(res, 1200));
-            Alert.alert("Submitted", JSON.stringify(values, null, 2));
-            resetForm(); // Optional: reset after success
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+              Alert.alert("Error", "You must be logged in to submit data.");
+              return;
+            }
+
+            await addDoc(collection(db, "employees"), {
+              ...values,
+              userId: currentUser.uid,
+              createdAt: serverTimestamp(),
+            });
+
+            Alert.alert("Success", "Employee data saved!", [
+              { text: "OK", onPress: () => router.push("/employee/list") },
+            ]);
+            resetForm();
+          } catch (error: any) {
+            console.error("Firestore Error:", error);
+            Alert.alert("Submission Failed", error.message);
           } finally {
             setSubmitting(false);
           }
